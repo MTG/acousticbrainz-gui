@@ -1,7 +1,5 @@
 #include <QDebug>
 #include <QFile>
-#include <QTemporaryFile>
-#include <QProcess>
 #include "utils.h"
 #include "analyzefiletask.h"
 #include "constants.h"
@@ -13,28 +11,28 @@ AnalyzeFileTask::AnalyzeFileTask(const QString &path)
 {
 }
 
-void AnalyzeFileTask::run()
+void AnalyzeFileTask::doanalyze()
 {
     qDebug() << "Analyzing file" << m_path;
 
-    AnalyzeResult *result = new AnalyzeResult();
+    result = new AnalyzeResult();
     result->fileName = m_path;
 
-	QProcess * extractor;
-	QTemporaryFile tmp;
 	QStringList arguments;
 	QString program = "./extractor/streaming_extractor_music";
-	
-	if (tmp.open()) {
-		arguments<<m_path<<tmp.fileName();
+    tmp = new QTemporaryFile();
+	if (tmp->open()) {
+		arguments<<m_path<<tmp->fileName();
 		extractor = new QProcess(this);
+        connect(extractor, SIGNAL(finished(int, QProcess::ExitStatus)), SLOT(processFinished(int, QProcess::ExitStatus)));
 		extractor->start(program, arguments);
-		result->exitCode = extractor->exitCode();
-		result->outputFileName = tmp.fileName();
-		//std::count << "Result: " << result->exitCode;
-		emit finished(result);
 	}
+}
 
-	
+void AnalyzeFileTask::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+    result->exitCode = extractor->exitCode();
+    result->outputFileName = tmp->fileName();
+    std::cout << "Result: " << result->exitCode;
+    emit finished(result);
 }
 

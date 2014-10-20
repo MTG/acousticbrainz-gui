@@ -4,6 +4,8 @@
 #include <QRunnable>
 #include <QObject>
 #include <QStringList>
+#include <QProcess>
+#include <QTemporaryFile>
 
 struct AnalyzeResult
 {
@@ -13,36 +15,31 @@ struct AnalyzeResult
 
     QString fileName;
 	QString outputFileName;
-    QString mbid;
-    QString fingerprint;
-	QString track;
-	QString artist;
-	QString album;
-	QString albumArtist;
-	QString puid;
-	int trackNo;
-	int discNo;
-	int year;
-    int length;
-    int bitrate;
 	int exitCode;
     bool error;
     QString errorMessage;
 };
 
-class AnalyzeFileTask : public QObject, public QRunnable
+class AnalyzeFileTask : public QObject
 {
 	Q_OBJECT
 
 public:
 	AnalyzeFileTask(const QString &path);
-	void run();
+	void doanalyze();
 
 signals:
 	void finished(AnalyzeResult *result);
 
+private slots:
+    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 private:
 	QString m_path;
+
+	QProcess* extractor;
+	QTemporaryFile* tmp;
+    AnalyzeResult *result;
 };
 
 #endif

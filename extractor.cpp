@@ -108,12 +108,15 @@ void Extractor::extractNextFile()
 	emit currentPathChanged(path);
 	AnalyzeFileTask *task = new AnalyzeFileTask(path);
 	connect(task, SIGNAL(finished(AnalyzeResult *)), SLOT(onFileAnalyzed(AnalyzeResult *)), Qt::QueuedConnection);
-	task->setAutoDelete(true);
-	QThreadPool::globalInstance()->start(task);
+	//task->setAutoDelete(true);
+	//QThreadPool::globalInstance()->start(task);
+    task->doanalyze();
 }
 
 void Extractor::onFileAnalyzed(AnalyzeResult *result)
 {
+    qDebug() << result->exitCode;
+    qDebug() << result->outputFileName;
 	m_activeFiles--;
 	emit progress(++m_extractedFiles);
 	if (!result->error) {
