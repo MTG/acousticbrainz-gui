@@ -27,6 +27,7 @@ class AnalyzeFileTask : public QObject
 public:
 	AnalyzeFileTask(const QString &path);
 	void doanalyze();
+    void terminate();
 
 signals:
 	void finished(AnalyzeResult *result);
@@ -34,7 +35,6 @@ signals:
 private slots:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void error(QProcess::ProcessError);
-    void terminate();
 
 private:
 	QString m_path;

@@ -44,10 +44,10 @@ void ProgressDialog::setupUi()
 
 	m_pauseButton = new QPushButton(tr("&Pause"));
 	m_pauseButton->setCheckable(true);
-	connect(m_pauseButton, SIGNAL(clicked(bool)), SLOT(togglePause(bool)));
+	//connect(m_pauseButton, SIGNAL(clicked(bool)), SLOT(togglePause(bool)));
 
 	QDialogButtonBox *buttonBox = new QDialogButtonBox();
-	buttonBox->addButton(m_pauseButton, QDialogButtonBox::ActionRole);
+	//buttonBox->addButton(m_pauseButton, QDialogButtonBox::ActionRole);
 	buttonBox->addButton(m_stopButton, QDialogButtonBox::RejectRole);
 	buttonBox->addButton(m_closeButton, QDialogButtonBox::RejectRole);
 	m_closeButton->setVisible(false);
@@ -95,7 +95,7 @@ void ProgressDialog::onFinished()
         m_mainStatusLabel->setText(tr("Submitted %n feature file(s), thank you!", "", m_extractor->submittedExtractions()));
     }
 	m_closeButton->setVisible(true);
-	m_pauseButton->setVisible(false);
+	//m_pauseButton->setVisible(false);
 	m_stopButton->setVisible(false);
 }
 
@@ -115,7 +115,7 @@ void ProgressDialog::setProgress(int value)
 void ProgressDialog::stop()
 {
 	m_extractor->cancel();
-	m_pauseButton->setEnabled(false);
+	//m_pauseButton->setEnabled(false);
 	m_stopButton->setEnabled(false);
 }
 

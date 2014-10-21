@@ -6,9 +6,9 @@
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QTime>
-#include <QProcess>
 
 class AnalyzeResult;
+class AnalyzeFileTask;
 class QNetworkReply;
 
 class Extractor : public QObject
@@ -60,7 +60,7 @@ private:
 	QStringList m_submitting;
 	QStringList m_submitted;
 	QNetworkReply *m_reply;
-    QList<QProcess *> m_activeProcesses;
+    QList<AnalyzeFileTask *> m_activeProcesses;
 
 	QTime m_time;
 	int m_extractedFiles;

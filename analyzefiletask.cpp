@@ -45,6 +45,7 @@ void AnalyzeFileTask::error(QProcess::ProcessError error) {
 
 void AnalyzeFileTask::terminate() {
     if (extractor) {
+        qDebug() << "in analyze task, terminating...";
         extractor->terminate();
     }
 }

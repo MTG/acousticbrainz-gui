@@ -62,6 +62,7 @@ void Extractor::cancel()
 		m_reply->abort();
 	}
 	for (int i = 0; i < m_activeProcesses.size(); i++) {
+        qDebug() << "process " << i << " terminating";
 		m_activeProcesses[i]->terminate();
 	}
 }
@@ -115,6 +116,8 @@ void Extractor::extractNextFile()
 	QString path = m_files.takeFirst();
 	emit currentPathChanged(path);
 	AnalyzeFileTask *task = new AnalyzeFileTask(path);
+    // TODO: How to remove this from the list when done
+    m_activeProcesses.append(task);
 	connect(task, SIGNAL(finished(AnalyzeResult *)), SLOT(onFileAnalyzed(AnalyzeResult *)), Qt::QueuedConnection);
 	task->doanalyze();
 }
