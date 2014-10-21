@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(fpsubmit)
-set(fpsubmit_VERSION 0.6)
+project(abzsubmit)
+set(abzsubmit_VERSION 0.6)
 
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)")
 set(EXEC_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix for executables and object code libraries" FORCE)
@@ -19,7 +19,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL MinSizeRel OR 
 	add_definitions(-DQT_NO_DEBUG_OUTPUT)
 endif(CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL MinSizeRel OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
 
-set(fpsubmit_HEADERS
+set(abzsubmit_HEADERS
 	checkabledirmodel.h
 	progressdialog.h
 	extractor.h
@@ -27,7 +27,7 @@ set(fpsubmit_HEADERS
 	loadfilelisttask.h
 	analyzefiletask.h
 )
-set(fpsubmit_SOURCES
+set(abzsubmit_SOURCES
 	checkabledirmodel.cpp
 	progressdialog.cpp
 	extractor.cpp
@@ -39,21 +39,21 @@ set(fpsubmit_SOURCES
 	crc.c
 	gzip.cpp
 )
-#set(fpsubmit_UIS fpsubmit.ui)
-#set(fpsubmit_RESOURCES extractor.qrc)
+#set(abzsubmit_UIS abzsubmit.ui)
+#set(abzsubmit_RESOURCES extractor.qrc)
 
-qt4_wrap_cpp(fpsubmit_MOC ${fpsubmit_HEADERS})
-qt4_wrap_ui(fpsubmit_UIS_H ${fpsubmit_UIS})
-qt4_add_resources(fpsubmit_RESOURCES_CPP ${fpsubmit_RESOURCES})
+qt4_wrap_cpp(abzsubmit_MOC ${abzsubmit_HEADERS})
+qt4_wrap_ui(abzsubmit_UIS_H ${abzsubmit_UIS})
+qt4_add_resources(abzsubmit_RESOURCES_CPP ${abzsubmit_RESOURCES})
 
 if(WIN32)
-	set(fpsubmit_SOURCES ${fpsubmit_SOURCES} extractor.rc)
+	set(abzsubmit_SOURCES ${abzsubmit_SOURCES} extractor.rc)
 endif()
 
 add_definitions(
 	-D__STDC_LIMIT_MACROS
 	-D__STDC_CONSTANT_MACROS
-	-DVERSION="${fpsubmit_VERSION}"
+	-DVERSION="${abzsubmit_VERSION}"
 )
 
 include_directories(
@@ -70,37 +70,37 @@ endif(WIN32)
 
 if(APPLE)
     set(GUI_TYPE MACOSX_BUNDLE)
-    set(fpsubmit_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/images/acoustid-fp.icns)
-    set_source_files_properties(${fpsubmit_ICON_FILE}
+    set(abzsubmit_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/images/acoustid-fp.icns)
+    set_source_files_properties(${abzsubmit_ICON_FILE}
         PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources)
-	set(fpsubmit_SOURCES ${fpsubmit_SOURCES} ${fpsubmit_ICON_FILE})
+	set(abzsubmit_SOURCES ${abzsubmit_SOURCES} ${abzsubmit_ICON_FILE})
 endif()
 
-add_executable(fpsubmit ${GUI_TYPE}
-    ${fpsubmit_SOURCES}
-    ${fpsubmit_MOC}
-    ${fpsubmit_UIS_H}
-    ${fpsubmit_RESOURCES_CPP}
+add_executable(abzsubmit ${GUI_TYPE}
+    ${abzsubmit_SOURCES}
+    ${abzsubmit_MOC}
+    ${abzsubmit_UIS_H}
+    ${abzsubmit_RESOURCES_CPP}
 )
 
-set_target_properties(fpsubmit PROPERTIES
+set_target_properties(abzsubmit PROPERTIES
 	OUTPUT_NAME acousticbrainz-extractor-ui
     MACOSX_BUNDLE_ICON_FILE acoustid-fp.icns
-	MACOSX_BUNDLE_INFO_STRING "AcousticBrainz Extractor ${fpsubmit_VERSION}"
+	MACOSX_BUNDLE_INFO_STRING "AcousticBrainz Extractor ${abzsubmit_VERSION}"
 	MACOSX_BUNDLE_BUNDLE_NAME "AcousticBrainz Extractor"
 )
 
-target_link_libraries(fpsubmit
+target_link_libraries(abzsubmit
 	${QT_LIBRARIES}
 )
 
 if(APPLE)
-	target_link_libraries(fpsubmit "-framework Accelerate -lz")
+	target_link_libraries(abzsubmit "-framework Accelerate -lz")
 endif()
 
 if(UNIX)
 	install(FILES acousticbrainz-extractor-ui.desktop DESTINATION share/applications)
 endif()
 
-install(TARGETS fpsubmit DESTINATION ${BIN_INSTALL_DIR})
+install(TARGETS abzsubmit DESTINATION ${BIN_INSTALL_DIR})
