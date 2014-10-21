@@ -85,7 +85,6 @@ void MainWindow::openAcoustidWebsite()
 
 void MainWindow::analyze()
 {
-	QString apiKey;
 	QList<QString> directories;
 	if (!validateFields(directories)) {
 		return;

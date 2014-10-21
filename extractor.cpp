@@ -18,7 +18,7 @@
 
 
 Extractor::Extractor(const QStringList &directories)
-    : m_directories(directories), m_paused(false), m_cancelled(false),
+	: m_directories(directories), m_paused(false), m_cancelled(false),
 	  m_finished(false), m_reply(0), m_activeFiles(0), m_extractedFiles(0), m_submittedFiles(0)
 {
 
@@ -61,11 +61,19 @@ void Extractor::cancel()
 	if (m_reply) {
 		m_reply->abort();
 	}
+	for (int i = 0; i < m_activeProcesses.size(); i++) {
+		m_activeProcesses[i]->terminate();
+	}
 }
 
 bool Extractor::isPaused()
 {
 	return m_paused;
+}
+
+bool Extractor::hasErrors()
+{
+	return m_numErrors > 0;
 }
 
 bool Extractor::isCancelled()
@@ -108,15 +116,13 @@ void Extractor::extractNextFile()
 	emit currentPathChanged(path);
 	AnalyzeFileTask *task = new AnalyzeFileTask(path);
 	connect(task, SIGNAL(finished(AnalyzeResult *)), SLOT(onFileAnalyzed(AnalyzeResult *)), Qt::QueuedConnection);
-	//task->setAutoDelete(true);
-	//QThreadPool::globalInstance()->start(task);
-    task->doanalyze();
+	task->doanalyze();
 }
 
 void Extractor::onFileAnalyzed(AnalyzeResult *result)
 {
-    qDebug() << result->exitCode;
-    qDebug() << result->outputFileName;
+	qDebug() << result->exitCode;
+	qDebug() << result->outputFileName;
 	m_activeFiles--;
 	emit progress(++m_extractedFiles);
 	if (!result->error) {
@@ -129,6 +135,7 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 	}
 	else {
 		qDebug() << "Error" << result->errorMessage << "while processing" << result->fileName;
+		m_numErrors++;
 	}
 	if (isRunning()) {
 		extractNextFile();

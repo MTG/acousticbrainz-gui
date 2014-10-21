@@ -33,6 +33,8 @@ signals:
 
 private slots:
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void error(QProcess::ProcessError);
+    void terminate();
 
 private:
 	QString m_path;

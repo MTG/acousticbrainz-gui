@@ -89,7 +89,11 @@ void ProgressDialog::onExtractionStarted(int count)
 
 void ProgressDialog::onFinished()
 {
-	m_mainStatusLabel->setText(tr("Submitted %n feature file(s), thank you!", "", m_extractor->submittedExtractions()));
+    if (m_extractor->hasErrors()) {
+        m_mainStatusLabel->setText(tr("Had %n errors", "", m_extractor->numErrors()));
+    } else {
+        m_mainStatusLabel->setText(tr("Submitted %n feature file(s), thank you!", "", m_extractor->submittedExtractions()));
+    }
 	m_closeButton->setVisible(true);
 	m_pauseButton->setVisible(false);
 	m_stopButton->setVisible(false);

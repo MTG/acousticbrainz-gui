@@ -6,11 +6,12 @@
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QTime>
+#include <QProcess>
 
 class AnalyzeResult;
 class QNetworkReply;
 
-class Extractor : public QObject 
+class Extractor : public QObject
 {
     Q_OBJECT
 
@@ -22,8 +23,10 @@ public:
 	bool isCancelled();
 	bool isRunning();
 	bool isFinished();
+    bool hasErrors();
 
 	int submittedExtractions() const { return m_submittedFiles; }
+    int numErrors() const { return m_numErrors; }
 
 signals:
     void statusChanged(const QString &message);
@@ -57,6 +60,7 @@ private:
 	QStringList m_submitting;
 	QStringList m_submitted;
 	QNetworkReply *m_reply;
+    QList<QProcess *> m_activeProcesses;
 
 	QTime m_time;
 	int m_extractedFiles;
@@ -65,6 +69,7 @@ private:
 	bool m_cancelled;
 	bool m_paused;
 	bool m_finished;
+    int m_numErrors;
 };
 
 #endif
