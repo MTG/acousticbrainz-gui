@@ -2,7 +2,11 @@
 #define FPSUBMIT_MAINWINDOW_H_
 
 #include <QMainWindow>
+#include <QCloseEvent>
 #include <QLineEdit>
+#include <QTextStream>
+#include <QTemporaryFile>
+#include <QTextStream>
 #include "checkabledirmodel.h"
 
 class MainWindow : public QMainWindow
@@ -12,16 +16,21 @@ class MainWindow : public QMainWindow
 public:
 	MainWindow();
 
+protected:
+    void closeEvent(QCloseEvent *event);
+
 private slots:
 	void openAcoustidWebsite();
 	void analyze();
 
 private:
 	void setupUi();
+    void createProfile();
 	bool validateFields(QList<QString> &directories);
 
 	QLineEdit *m_apiKeyEdit;
 	CheckableDirModel *m_directoryModel;
+    QTemporaryFile *m_profile;
 };
 
 #endif

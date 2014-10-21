@@ -6,6 +6,7 @@
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QTime>
+#include <QTemporaryFile>
 
 class AnalyzeResult;
 class AnalyzeFileTask;
@@ -16,7 +17,7 @@ class Extractor : public QObject
     Q_OBJECT
 
 public:
-    Extractor(const QStringList &directories);
+    Extractor(const QStringList &directories, QTemporaryFile *m_profile);
     ~Extractor();
 
 	bool isPaused();
@@ -52,6 +53,7 @@ private:
 	void extractNextFile();
 	//bool maybeSubmit(bool force=false);
 
+    QTemporaryFile *m_profile;
     QString m_apiKey;
     QStringList m_files;
     QStringList m_directories;

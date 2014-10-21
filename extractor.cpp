@@ -17,8 +17,8 @@
 #include "gzip.h"
 
 
-Extractor::Extractor(const QStringList &directories)
-	: m_directories(directories), m_paused(false), m_cancelled(false),
+Extractor::Extractor(const QStringList &directories, QTemporaryFile *profile)
+	: m_profile(profile), m_directories(directories), m_paused(false), m_cancelled(false),
 	  m_finished(false), m_reply(0), m_activeFiles(0), m_extractedFiles(0), m_submittedFiles(0)
 {
 
@@ -62,7 +62,7 @@ void Extractor::cancel()
 		m_reply->abort();
 	}
 	for (int i = 0; i < m_activeProcesses.size(); i++) {
-        qDebug() << "process " << i << " terminating";
+		qDebug() << "process " << i << " terminating";
 		m_activeProcesses[i]->terminate();
 	}
 }
@@ -115,9 +115,9 @@ void Extractor::extractNextFile()
 	m_activeFiles++;
 	QString path = m_files.takeFirst();
 	emit currentPathChanged(path);
-	AnalyzeFileTask *task = new AnalyzeFileTask(path);
-    // TODO: How to remove this from the list when done
-    m_activeProcesses.append(task);
+	AnalyzeFileTask *task = new AnalyzeFileTask(path, m_profile->fileName());
+	// TODO: How to remove this from the list when done
+	m_activeProcesses.append(task);
 	connect(task, SIGNAL(finished(AnalyzeResult *)), SLOT(onFileAnalyzed(AnalyzeResult *)), Qt::QueuedConnection);
 	task->doanalyze();
 }

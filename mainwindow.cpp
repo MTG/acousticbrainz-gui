@@ -10,6 +10,7 @@
 #include <QPushButton>
 #include <QDebug>
 #include <QSettings>
+#include <QCryptographicHash>
 #include "progressdialog.h"
 #include "checkabledirmodel.h"
 #include "extractor.h"
@@ -19,6 +20,13 @@
 MainWindow::MainWindow()
 {
 	setupUi();
+	createProfile();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+	qDebug() << "close";
+	delete m_profile;
+	event->accept();
 }
 
 void MainWindow::setupUi()
@@ -78,6 +86,30 @@ void MainWindow::setupUi()
 	resize(QSize(400, 500));
 }
 
+void MainWindow::createProfile() {
+	m_profile = new QTemporaryFile();
+	if (m_profile->open()) {
+		// TODO: This path name shouldn't be in more than one place
+		QString program = "./extractor/streaming_extractor_music";
+		QCryptographicHash *hash = new QCryptographicHash(QCryptographicHash::Sha1);
+		QFile app(program);
+		if (app.open(QIODevice::ReadOnly )) {
+			QByteArray data = app.readAll();
+			hash->addData(data);
+		}
+
+		QByteArray finalHash = hash->result();
+		QString hstr = finalHash.toHex();
+
+		qDebug() << "profile file " << m_profile->fileName();
+		QTextStream out(m_profile);
+		out << "requireMbid: true\n";
+		out << "indent: 0\n";
+		out << "mergeValues:\n	metadata:\n		version:\n			essentia_build_sha: " << hstr << "\n";
+		m_profile->close();
+	}
+}
+
 void MainWindow::openAcoustidWebsite()
 {
 	QDesktopServices::openUrl(QUrl::fromPercentEncoding(API_KEY_URL));
@@ -89,11 +121,11 @@ void MainWindow::analyze()
 	if (!validateFields(directories)) {
 		return;
 	}
-	Extractor *extractor = new Extractor(directories);
-    ProgressDialog *progressDialog = new ProgressDialog(this, extractor);
+	Extractor *extractor = new Extractor(directories, m_profile);
+	ProgressDialog *progressDialog = new ProgressDialog(this, extractor);
 	extractor->start();
-    progressDialog->setModal(true);
-    progressDialog->show();
+	progressDialog->setModal(true);
+	progressDialog->show();
 }
 
 bool MainWindow::validateFields(QList<QString> &directories)

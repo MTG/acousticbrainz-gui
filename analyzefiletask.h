@@ -25,7 +25,7 @@ class AnalyzeFileTask : public QObject
 	Q_OBJECT
 
 public:
-	AnalyzeFileTask(const QString &path);
+	AnalyzeFileTask(const QString &path, const QString &file);
 	void doanalyze();
     void terminate();
 
@@ -38,6 +38,7 @@ private slots:
 
 private:
 	QString m_path;
+    QString m_profile;
 
 	QProcess* extractor;
 	QTemporaryFile* tmp;
