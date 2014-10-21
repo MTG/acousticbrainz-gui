@@ -16,6 +16,8 @@
 #include "utils.h"
 #include "gzip.h"
 
+#include <qjson/parser.h>
+
 
 Extractor::Extractor(const QStringList &directories, QTemporaryFile *profile)
 	: m_profile(profile), m_directories(directories), m_paused(false), m_cancelled(false),
@@ -129,12 +131,12 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 	m_activeFiles--;
 	emit progress(++m_extractedFiles);
 	if (!result->error) {
-		/*if (!isCancelled()) {
+		if (!isCancelled()) {
 			m_submitQueue.append(result);
 		}
 		if (isRunning()) {
 			maybeSubmit();
-		}*/
+		}
 	}
 	else {
 		qDebug() << "Error" << result->errorMessage << "while processing" << result->fileName;
@@ -150,6 +152,29 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 			return;
 		}
 		//maybeSubmit(true);
+	}
+}
+
+bool Extractor::maybeSubmit(bool force) {
+	if (!m_submitQueue.empty()) {
+		AnalyzeResult *result = m_submitQueue.takeFirst();
+		QString filename = result->outputFileName;
+		QFile thejson(filename);
+		if (thejson.open(QIODevice::ReadOnly)) {
+			QJson::Parser parser;
+			bool ok;
+
+			QVariantMap result = parser.parse (thejson.readAll(), &ok).toMap();
+			if (!ok) {
+				qFatal("An error occurred during parsing");
+				exit (1);
+			}
+			QVariantMap md = result["metadata"].toMap();
+			QVariantMap tags = md["tags"].toMap();
+			foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
+				  qDebug() << "\t-" << plugin.toString();
+			}
+		}
 	}
 }
 

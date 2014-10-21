@@ -12,6 +12,7 @@ set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "Installation
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 find_package(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
+find_package(QJSON REQUIRED)
 
 include(${QT_USE_FILE})
 
@@ -93,6 +94,7 @@ set_target_properties(abzsubmit PROPERTIES
 
 target_link_libraries(abzsubmit
 	${QT_LIBRARIES}
+    ${QJSON_LIBRARIES}
 )
 
 if(APPLE)
