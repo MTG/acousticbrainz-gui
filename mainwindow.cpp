@@ -24,7 +24,6 @@ MainWindow::MainWindow()
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
-	qDebug() << "close";
 	delete m_profile;
 	event->accept();
 }
@@ -105,7 +104,7 @@ void MainWindow::createProfile() {
 		QTextStream out(m_profile);
 		out << "requireMbid: true\n";
 		out << "indent: 0\n";
-		out << "mergeValues:\n	metadata:\n		version:\n			essentia_build_sha: " << hstr << "\n";
+		out << "mergeValues:\n    metadata:\n        version:\n            essentia_build_sha: " << hstr << "\n";
 		m_profile->close();
 	}
 }
