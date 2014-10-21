@@ -47,7 +47,7 @@ public slots:
 private slots:
 	void onFileListLoaded(const QStringList &files);
 	void onFileAnalyzed(AnalyzeResult *);
-	//void onRequestFinished(QNetworkReply *reply);
+	void onRequestFinished(QNetworkReply *reply);
 
 private:
 	void extractNextFile();

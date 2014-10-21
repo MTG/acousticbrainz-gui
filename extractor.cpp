@@ -18,12 +18,55 @@
 
 #include <qjson/parser.h>
 
+class NetworkProxyFactory : public QNetworkProxyFactory
+{
+public:
+	NetworkProxyFactory() : m_httpProxy(QNetworkProxy::NoProxy)
+	{
+		char* httpProxyUrl = getenv("http_proxy");
+		if (httpProxyUrl) {
+			QUrl url = QUrl::fromEncoded(QByteArray(httpProxyUrl));
+			if (url.isValid() && !url.host().isEmpty()) {
+				m_httpProxy = QNetworkProxy(QNetworkProxy::HttpProxy, url.host(), url.port(80));
+				if (!url.userName().isEmpty())  {
+					m_httpProxy.setUser(url.userName());
+					if (!url.password().isEmpty()) {
+						m_httpProxy.setPassword(url.password());
+					}
+				}
+			}
+		}
+	}
+
+	QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery& query)
+	{
+		QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(query);
+		QString protocol = query.protocolTag().toLower();
+		if (m_httpProxy.type() != QNetworkProxy::NoProxy && protocol == QLatin1String("http")) {
+			QMutableListIterator<QNetworkProxy> i(proxies);
+			while (i.hasNext()) {
+				QNetworkProxy& proxy = i.next();
+				if (proxy.type() == QNetworkProxy::NoProxy) {
+					i.remove();
+				}
+			}
+			proxies.append(m_httpProxy);
+			proxies.append(QNetworkProxy::NoProxy);
+		}
+		return proxies;
+	}
+
+private:
+	QNetworkProxy m_httpProxy;
+};
 
 Extractor::Extractor(const QStringList &directories, QTemporaryFile *profile)
 	: m_profile(profile), m_directories(directories), m_paused(false), m_cancelled(false),
 	  m_finished(false), m_reply(0), m_activeFiles(0), m_extractedFiles(0), m_submittedFiles(0)
 {
-
+	m_networkAccessManager = new QNetworkAccessManager(this);
+	m_networkAccessManager->setProxyFactory(new NetworkProxyFactory());
+	connect(m_networkAccessManager, SIGNAL(finished(QNetworkReply *)), SLOT(onRequestFinished(QNetworkReply*)));
 }
 
 Extractor::~Extractor()
@@ -163,18 +206,33 @@ bool Extractor::maybeSubmit(bool force) {
 		if (thejson.open(QIODevice::ReadOnly)) {
 			QJson::Parser parser;
 			bool ok;
-
-			QVariantMap result = parser.parse (thejson.readAll(), &ok).toMap();
+			QByteArray jsonContents = thejson.readAll();
+			QVariantMap result = parser.parse (jsonContents, &ok).toMap();
 			if (!ok) {
 				qFatal("An error occurred during parsing");
 				exit (1);
 			}
 			QVariantMap md = result["metadata"].toMap();
 			QVariantMap tags = md["tags"].toMap();
+			QString uuid;
 			foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
 				  qDebug() << "\t-" << plugin.toString();
+				  uuid = plugin.toString();
 			}
+
+			QString submit = QString("http://localhost:8989/%1/low-level").arg(uuid);
+			qDebug() << "Submitting to " << submit;
+			QNetworkRequest request = QNetworkRequest(QUrl(submit));
+			//request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+			//request.setRawHeader("User-Agent", userAgentString().toAscii());
+			// TODO This will read a QIODevice - a file?
+			m_reply = m_networkAccessManager->post(request, jsonContents);
+			return true;
 		}
 	}
+}
+
+void Extractor::onRequestFinished(QNetworkReply *reply)
+{
 }
 
