@@ -20,7 +20,7 @@ inline QString extractExtension(const QString &fileName)
 	if (pos == -1) {
 		return "";
 	}
-    return fileName.mid(pos + 1).toUpper();
+	return fileName.mid(pos + 1).toUpper();
 }
 
 #endif

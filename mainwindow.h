@@ -17,7 +17,7 @@ public:
 	MainWindow();
 
 protected:
-    void closeEvent(QCloseEvent *event);
+	void closeEvent(QCloseEvent *event);
 
 private slots:
 	void openAcoustidWebsite();
@@ -25,12 +25,12 @@ private slots:
 
 private:
 	void setupUi();
-    void createProfile();
+	void createProfile();
 	bool validateFields(QList<QString> &directories);
 
 	QLineEdit *m_apiKeyEdit;
 	CheckableDirModel *m_directoryModel;
-    QTemporaryFile *m_profile;
+	QTemporaryFile *m_profile;
 };
 
 #endif

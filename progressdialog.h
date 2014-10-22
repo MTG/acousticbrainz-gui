@@ -8,16 +8,16 @@
 
 class ProgressDialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    ProgressDialog(QWidget *parent, Extractor *extractor);
-    ~ProgressDialog();
+	ProgressDialog(QWidget *parent, Extractor *extractor);
+	~ProgressDialog();
 
 public slots:
-    void setProgress(int value);
-    void togglePause(bool);
-    void stop();
+	void setProgress(int value);
+	void togglePause(bool);
+	void stop();
 	void onFileListLoadingStarted();
 	void onExtractionStarted(int count);
 	void onCurrentPathChanged(const QString &path);
@@ -27,18 +27,18 @@ public slots:
 	void onNoFilesError();
 
 protected:
-    void closeEvent(QCloseEvent *event);
+	void closeEvent(QCloseEvent *event);
 
 private:
-    void setupUi();
+	void setupUi();
 
 	Extractor *m_extractor;
-    QPushButton *m_closeButton;
-    QPushButton *m_pauseButton;
-    QPushButton *m_stopButton;
-    QProgressBar *m_progressBar;
-    QLabel *m_mainStatusLabel;
-    QLabel *m_currentPathLabel;
+	QPushButton *m_closeButton;
+	QPushButton *m_pauseButton;
+	QPushButton *m_stopButton;
+	QProgressBar *m_progressBar;
+	QLabel *m_mainStatusLabel;
+	QLabel *m_currentPathLabel;
 };
 
 #endif

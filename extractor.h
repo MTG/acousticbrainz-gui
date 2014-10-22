@@ -14,24 +14,24 @@ class QNetworkReply;
 
 class Extractor : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    Extractor(const QStringList &directories, QTemporaryFile *m_profile);
-    ~Extractor();
+	Extractor(const QStringList &directories, QTemporaryFile *m_profile);
+	~Extractor();
 
 	bool isPaused();
 	bool isCancelled();
 	bool isRunning();
 	bool isFinished();
-    bool hasErrors();
+	bool hasErrors();
 
 	int submittedExtractions() const { return m_submittedFiles; }
-    int numErrors() const { return m_numErrors; }
+	int numErrors() const { return m_numErrors; }
 
 signals:
-    void statusChanged(const QString &message);
-    void currentPathChanged(const QString &path);
+	void statusChanged(const QString &message);
+	void currentPathChanged(const QString &path);
 	void fileListLoadingStarted();
 	void extractionStarted(int fileCount);
 	void progress(int i);
@@ -39,10 +39,10 @@ signals:
 	void noFilesError();
 
 public slots:
-    void start();
-    void pause();
-    void resume();
-    void cancel();
+	void start();
+	void pause();
+	void resume();
+	void cancel();
 
 private slots:
 	void onFileListLoaded(const QStringList &files);
@@ -53,16 +53,16 @@ private:
 	void extractNextFile();
 	bool maybeSubmit(bool force=false);
 
-    QTemporaryFile *m_profile;
-    QString m_apiKey;
-    QStringList m_files;
-    QStringList m_directories;
+	QTemporaryFile *m_profile;
+	QString m_apiKey;
+	QStringList m_files;
+	QStringList m_directories;
 	QNetworkAccessManager *m_networkAccessManager;
 	QList<AnalyzeResult *> m_submitQueue;
 	QStringList m_submitting;
 	QStringList m_submitted;
 	QNetworkReply *m_reply;
-    QList<AnalyzeFileTask *> m_activeProcesses;
+	QList<AnalyzeFileTask *> m_activeProcesses;
 
 	QTime m_time;
 	int m_extractedFiles;
@@ -71,7 +71,7 @@ private:
 	bool m_cancelled;
 	bool m_paused;
 	bool m_finished;
-    int m_numErrors;
+	int m_numErrors;
 };
 
 #endif

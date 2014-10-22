@@ -9,15 +9,15 @@
 
 struct AnalyzeResult
 {
-    AnalyzeResult() : error(false)
-    {
-    }
+	AnalyzeResult() : error(false)
+	{
+	}
 
-    QString fileName;
+	QString fileName;
 	QString outputFileName;
 	int exitCode;
-    bool error;
-    QString errorMessage;
+	bool error;
+	QString errorMessage;
 };
 
 class AnalyzeFileTask : public QObject
@@ -27,22 +27,22 @@ class AnalyzeFileTask : public QObject
 public:
 	AnalyzeFileTask(const QString &path, const QString &file);
 	void doanalyze();
-    void terminate();
+	void terminate();
 
 signals:
 	void finished(AnalyzeResult *result);
 
 private slots:
-    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void error(QProcess::ProcessError);
+	void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+	void error(QProcess::ProcessError);
 
 private:
 	QString m_path;
-    QString m_profile;
+	QString m_profile;
 
 	QProcess* extractor;
 	QTemporaryFile* tmp;
-    AnalyzeResult *result;
+	AnalyzeResult *result;
 };
 
 #endif

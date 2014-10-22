@@ -18,13 +18,13 @@ ProgressDialog::ProgressDialog(QWidget *parent, Extractor *extractor)
 	: QDialog(parent), m_extractor(extractor)
 {
 	setupUi();
-    connect(extractor, SIGNAL(fileListLoadingStarted()), SLOT(onFileListLoadingStarted()));
-    connect(extractor, SIGNAL(extractionStarted(int)), SLOT(onExtractionStarted(int)));
-    connect(extractor, SIGNAL(currentPathChanged(const QString &)), SLOT(onCurrentPathChanged(const QString &)));
-    connect(extractor, SIGNAL(finished()), SLOT(onFinished()));
-    //connect(fingerprinter, SIGNAL(networkError(const QString &)), SLOT(onNetworkError(const QString &)));
-    //connect(fingerprinter, SIGNAL(authenticationError()), SLOT(onAuthenticationError()));
-    connect(extractor, SIGNAL(noFilesError()), SLOT(onNoFilesError()));
+	connect(extractor, SIGNAL(fileListLoadingStarted()), SLOT(onFileListLoadingStarted()));
+	connect(extractor, SIGNAL(extractionStarted(int)), SLOT(onExtractionStarted(int)));
+	connect(extractor, SIGNAL(currentPathChanged(const QString &)), SLOT(onCurrentPathChanged(const QString &)));
+	connect(extractor, SIGNAL(finished()), SLOT(onFinished()));
+	//connect(fingerprinter, SIGNAL(networkError(const QString &)), SLOT(onNetworkError(const QString &)));
+	//connect(fingerprinter, SIGNAL(authenticationError()), SLOT(onAuthenticationError()));
+	connect(extractor, SIGNAL(noFilesError()), SLOT(onNoFilesError()));
 }
 
 ProgressDialog::~ProgressDialog()
@@ -57,7 +57,7 @@ void ProgressDialog::setupUi()
 	m_progressBar->setMaximum(0);
 	m_progressBar->setFormat(tr("%v of %m"));
 	m_progressBar->setTextVisible(false);
-    connect(m_extractor, SIGNAL(progress(int)), m_progressBar, SLOT(setValue(int)));
+	connect(m_extractor, SIGNAL(progress(int)), m_progressBar, SLOT(setValue(int)));
 
 	QVBoxLayout *mainLayout = new QVBoxLayout();
 	mainLayout->addWidget(m_mainStatusLabel);
@@ -89,11 +89,11 @@ void ProgressDialog::onExtractionStarted(int count)
 
 void ProgressDialog::onFinished()
 {
-    if (m_extractor->hasErrors()) {
-        m_mainStatusLabel->setText(tr("Had %n errors", "", m_extractor->numErrors()));
-    } else {
-        m_mainStatusLabel->setText(tr("Submitted %n feature file(s), thank you!", "", m_extractor->submittedExtractions()));
-    }
+	if (m_extractor->hasErrors()) {
+		m_mainStatusLabel->setText(tr("Had %n errors", "", m_extractor->numErrors()));
+	} else {
+		m_mainStatusLabel->setText(tr("Submitted %n feature file(s), thank you!", "", m_extractor->submittedExtractions()));
+	}
 	m_closeButton->setVisible(true);
 	//m_pauseButton->setVisible(false);
 	m_stopButton->setVisible(false);
@@ -101,10 +101,10 @@ void ProgressDialog::onFinished()
 
 void ProgressDialog::onCurrentPathChanged(const QString &path)
 {
-    QString elidedPath =
-        m_currentPathLabel->fontMetrics().elidedText(
-            path, Qt::ElideMiddle, m_currentPathLabel->width());
-    m_currentPathLabel->setText(elidedPath);
+	QString elidedPath =
+		m_currentPathLabel->fontMetrics().elidedText(
+			path, Qt::ElideMiddle, m_currentPathLabel->width());
+	m_currentPathLabel->setText(elidedPath);
 }
 
 void ProgressDialog::setProgress(int value)
