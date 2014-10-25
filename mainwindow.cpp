@@ -16,6 +16,7 @@
 #include "extractor.h"
 #include "mainwindow.h"
 #include "constants.h"
+#include "utils.h"
 
 MainWindow::MainWindow()
 {
@@ -88,10 +89,8 @@ void MainWindow::setupUi()
 void MainWindow::createProfile() {
 	m_profile = new QTemporaryFile();
 	if (m_profile->open()) {
-		// TODO: This path name shouldn't be in more than one place
-		QString program = "./extractor/streaming_extractor_music";
 		QCryptographicHash *hash = new QCryptographicHash(QCryptographicHash::Sha1);
-		QFile app(program);
+		QFile app(extractorPath());
 		if (app.open(QIODevice::ReadOnly )) {
 			QByteArray data = app.readAll();
 			hash->addData(data);
@@ -100,7 +99,6 @@ void MainWindow::createProfile() {
 		QByteArray finalHash = hash->result();
 		QString hstr = finalHash.toHex();
 
-		qDebug() << "profile file " << m_profile->fileName();
 		QTextStream out(m_profile);
 		out << "requireMbid: true\n";
 		out << "indent: 0\n";
@@ -109,7 +107,7 @@ void MainWindow::createProfile() {
 	}
 }
 
-void MainWindow::openAcoustidWebsite()
+void MainWindow::openAcousticbrainzWebsite()
 {
 	QDesktopServices::openUrl(QUrl::fromPercentEncoding(API_KEY_URL));
 }

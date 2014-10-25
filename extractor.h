@@ -20,7 +20,6 @@ public:
 	Extractor(const QStringList &directories, QTemporaryFile *m_profile);
 	~Extractor();
 
-	bool isPaused();
 	bool isCancelled();
 	bool isRunning();
 	bool isFinished();
@@ -28,20 +27,20 @@ public:
 
 	int submittedExtractions() const { return m_submittedFiles; }
 	int numErrors() const { return m_numErrors; }
+	int numNoMbid() const { return m_numNoMbid; }
 
 signals:
 	void statusChanged(const QString &message);
 	void currentPathChanged(const QString &path);
 	void fileListLoadingStarted();
 	void extractionStarted(int fileCount);
+    void networkError(const QString &message);
 	void progress(int i);
 	void finished();
 	void noFilesError();
 
 public slots:
 	void start();
-	void pause();
-	void resume();
 	void cancel();
 
 private slots:
@@ -69,9 +68,9 @@ private:
 	int m_submittedFiles;
 	int m_activeFiles;
 	bool m_cancelled;
-	bool m_paused;
 	bool m_finished;
 	int m_numErrors;
+	int m_numNoMbid;
 };
 
 #endif

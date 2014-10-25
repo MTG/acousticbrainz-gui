@@ -61,8 +61,8 @@ private:
 };
 
 Extractor::Extractor(const QStringList &directories, QTemporaryFile *profile)
-	: m_profile(profile), m_directories(directories), m_paused(false), m_cancelled(false),
-	  m_finished(false), m_reply(0), m_activeFiles(0), m_extractedFiles(0), m_submittedFiles(0)
+	: m_profile(profile), m_directories(directories), m_cancelled(false),
+	  m_finished(false), m_reply(0), m_activeFiles(0), m_extractedFiles(0), m_submittedFiles(0), m_numErrors(0), m_numNoMbid(0)
 {
 	m_networkAccessManager = new QNetworkAccessManager(this);
 	m_networkAccessManager->setProxyFactory(new NetworkProxyFactory());
@@ -84,20 +84,6 @@ void Extractor::start()
 	QThreadPool::globalInstance()->start(task);
 }
 
-void Extractor::pause()
-{
-	m_paused = true;
-}
-
-void Extractor::resume()
-{
-	m_paused = false;
-	while (!m_files.isEmpty() && m_activeFiles < MAX_ACTIVE_FILES) {
-		extractNextFile();
-	}
-	//maybeSubmit();
-}
-
 void Extractor::cancel()
 {
 	m_cancelled = true;
@@ -110,11 +96,6 @@ void Extractor::cancel()
 		qDebug() << "process " << i << " terminating";
 		m_activeProcesses[i]->terminate();
 	}
-}
-
-bool Extractor::isPaused()
-{
-	return m_paused;
 }
 
 bool Extractor::hasErrors()
@@ -134,7 +115,7 @@ bool Extractor::isFinished()
 
 bool Extractor::isRunning()
 {
-	return !isPaused() && !isCancelled() && !isFinished();
+	return !isCancelled() && !isFinished();
 }
 
 void Extractor::onFileListLoaded(const QStringList &files)
@@ -182,8 +163,13 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 		}
 	}
 	else {
-		qDebug() << "Error" << result->errorMessage << "while processing" << result->fileName;
-		m_numErrors++;
+		qDebug() << "Error " << result->errorMessage << "while processing " << result->fileName;
+        qDebug() << "   Return code " << result->exitCode;
+        if (result->exitCode == 2) {
+            m_numNoMbid++;
+        } else {
+            m_numErrors++;
+        }
 	}
 	if (isRunning()) {
 		extractNextFile();
@@ -194,45 +180,94 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 			emit finished();
 			return;
 		}
-		//maybeSubmit(true);
+		maybeSubmit(true);
 	}
 }
 
-bool Extractor::maybeSubmit(bool force) {
-	if (!m_submitQueue.empty()) {
-		AnalyzeResult *result = m_submitQueue.takeFirst();
-		QString filename = result->outputFileName;
-		QFile thejson(filename);
-		if (thejson.open(QIODevice::ReadOnly)) {
-			QJson::Parser parser;
-			bool ok;
-			QByteArray jsonContents = thejson.readAll();
-			QVariantMap result = parser.parse (jsonContents, &ok).toMap();
-			if (!ok) {
-				qFatal("An error occurred during parsing");
-				exit (1);
-			}
-			QVariantMap md = result["metadata"].toMap();
-			QVariantMap tags = md["tags"].toMap();
-			QString uuid;
-			foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
-				  qDebug() << "\t-" << plugin.toString();
-				  uuid = plugin.toString();
+
+bool Extractor::maybeSubmit(bool force)
+{
+	int size = qMin(MAX_BATCH_SIZE, m_submitQueue.size());
+	if (!m_reply && (size >= MIN_BATCH_SIZE || (force && size > 0))) {
+		qDebug() << "Submitting" << size << "codes";
+		for (int i = 0; i < size; i++) {
+			AnalyzeResult *result = m_submitQueue.takeFirst();
+			//qDebug() << "  " << result->mbid;
+
+			QString filename = result->outputFileName;
+			QFile thejson(filename);
+			if (thejson.open(QIODevice::ReadOnly)) {
+				QJson::Parser parser;
+				bool ok;
+				QByteArray jsonContents = thejson.readAll();
+				QVariantMap json = parser.parse (jsonContents, &ok).toMap();
+				if (!ok) {
+					qDebug() << "Failed to parse json, skipping";
+                    continue;
+				}
+				QVariantMap tags = json["metadata"].toMap()["tags"].toMap();
+				QString uuid;
+				foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
+					  uuid = plugin.toString();
+					  break;
+				}
+                m_submitting.append(result->fileName);
+
+                QString submit = QString(SUBMIT_URL).arg(uuid);
+                qDebug() << "Submitting to " << submit;
+                QNetworkRequest request = QNetworkRequest(QUrl(submit));
+                request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+                request.setRawHeader("User-Agent", userAgentString().toAscii());
+                m_reply = m_networkAccessManager->post(request, jsonContents);
 			}
 
-			QString submit = QString("http://localhost:8989/%1/low-level").arg(uuid);
-			qDebug() << "Submitting to " << submit;
-			QNetworkRequest request = QNetworkRequest(QUrl(submit));
-			//request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-			//request.setRawHeader("User-Agent", userAgentString().toAscii());
-			// TODO This will read a QIODevice - a file?
-			m_reply = m_networkAccessManager->post(request, jsonContents);
-			return true;
+			delete result;
 		}
+        return true;
 	}
+	return false;
 }
 
 void Extractor::onRequestFinished(QNetworkReply *reply)
 {
+    bool stop = false;
+    QNetworkReply::NetworkError error = reply->error();
+
+    if (m_cancelled) {
+        stop = true;
+    }
+    else if (error != QNetworkReply::NoError) {
+        qWarning() << "Submission failed with network error" << error;
+        emit networkError(reply->errorString());
+        stop = true;
+    }
+
+    if (!stop && error == QNetworkReply::NoError) {
+        m_submitted.append(m_submitting);
+        m_submittedFiles += m_submitting.size();
+        maybeSubmit();
+        qDebug() << "Submission finished";
+    }
+
+    if (m_submitted.size() > 0) {
+        UpdateLogFileTask *task = new UpdateLogFileTask(m_submitted);
+        task->setAutoDelete(true);
+        QThreadPool::globalInstance()->start(task);
+        m_submitted.clear();
+    }
+
+    m_submitting.clear();
+    reply->deleteLater();
+    m_reply = 0;
+
+    if (m_submitQueue.isEmpty() && m_files.isEmpty()) {
+        m_finished = true;
+        emit finished();
+        return;
+    }
+
+    if (isRunning()) {
+        maybeSubmit(m_files.isEmpty());
+    }
 }
 

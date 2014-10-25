@@ -19,21 +19,21 @@ void AnalyzeFileTask::doanalyze()
 	result->fileName = m_path;
 
 	QStringList arguments;
-	QString program = "./extractor/streaming_extractor_music";
 	tmp = new QTemporaryFile();
 	if (tmp->open()) {
 		arguments << m_path << tmp->fileName() << m_profile;
 		extractor = new QProcess(this);
 		connect(extractor, SIGNAL(finished(int, QProcess::ExitStatus)), SLOT(processFinished(int, QProcess::ExitStatus)));
 		connect(extractor, SIGNAL(error(QProcess::ProcessError)), SLOT(error(QProcess::ProcessError)));
-		extractor->start(program, arguments);
+		extractor->start(extractorPath(), arguments);
 	}
 }
 
 void AnalyzeFileTask::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 	result->exitCode = extractor->exitCode();
 	result->outputFileName = tmp->fileName();
-	std::cout << "Result: " << result->exitCode;
+    result->error = !exitCode==0;
+	qDebug() << "Result: " << result->exitCode << ", error " << result->error;
 	emit finished(result);
 }
 

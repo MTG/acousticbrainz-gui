@@ -16,7 +16,6 @@ public:
 
 public slots:
 	void setProgress(int value);
-	void togglePause(bool);
 	void stop();
 	void onFileListLoadingStarted();
 	void onExtractionStarted(int count);
@@ -34,7 +33,6 @@ private:
 
 	Extractor *m_extractor;
 	QPushButton *m_closeButton;
-	QPushButton *m_pauseButton;
 	QPushButton *m_stopButton;
 	QProgressBar *m_progressBar;
 	QLabel *m_mainStatusLabel;

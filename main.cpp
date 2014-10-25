@@ -4,9 +4,9 @@
 int main(int argc, char **argv)
 {
 	QApplication app(argc, argv);
-	app.setOrganizationName("Acoustid");
-	app.setOrganizationDomain("acoustid.org");
-	app.setApplicationName("Fingerprinter");
+	app.setOrganizationName("Acousticbrainz");
+	app.setOrganizationDomain("acousticbrainz.org");
+	app.setApplicationName("Submitter");
 	app.setApplicationVersion(VERSION);
 	MainWindow window;
 	window.show();

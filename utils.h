@@ -4,9 +4,18 @@
 #include <QString>
 #include <QDesktopServices>
 
+inline QString extractorPath()
+{
+#ifdef Q_OS_WIN32
+    return "\\extractor\\streaming_extractor_music";
+#else
+    return "./extractor/streaming_extractor_music";
+#endif
+}
+
 inline QString userAgentString()
 {
-	return QString("AcoustidFingerprinter/%1 Qt/%2").arg(VERSION).arg(qVersion());
+	return QString("AcousticbrainzSubmitter/%1 Qt/%2").arg(VERSION).arg(qVersion());
 }
 
 inline QString cacheFileName()

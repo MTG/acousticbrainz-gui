@@ -20,7 +20,7 @@ protected:
 	void closeEvent(QCloseEvent *event);
 
 private slots:
-	void openAcoustidWebsite();
+	void openAcousticbrainzWebsite();
 	void analyze();
 
 private:

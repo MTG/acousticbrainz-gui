@@ -42,12 +42,7 @@ void ProgressDialog::setupUi()
 	m_stopButton = new QPushButton(tr("&Stop"));
 	connect(m_stopButton, SIGNAL(clicked()), SLOT(stop()));
 
-	m_pauseButton = new QPushButton(tr("&Pause"));
-	m_pauseButton->setCheckable(true);
-	//connect(m_pauseButton, SIGNAL(clicked(bool)), SLOT(togglePause(bool)));
-
 	QDialogButtonBox *buttonBox = new QDialogButtonBox();
-	//buttonBox->addButton(m_pauseButton, QDialogButtonBox::ActionRole);
 	buttonBox->addButton(m_stopButton, QDialogButtonBox::RejectRole);
 	buttonBox->addButton(m_closeButton, QDialogButtonBox::RejectRole);
 	m_closeButton->setVisible(false);
@@ -89,13 +84,15 @@ void ProgressDialog::onExtractionStarted(int count)
 
 void ProgressDialog::onFinished()
 {
+    QString result = QString("Submitted %1 feature file(s), thank you!").arg(m_extractor->submittedExtractions());
+    if (m_extractor->numNoMbid() > 0) {
+        result += QString("\n%1 file(s) had no MBID and were skipped").arg(m_extractor->numNoMbid());
+    }
 	if (m_extractor->hasErrors()) {
-		m_mainStatusLabel->setText(tr("Had %n errors", "", m_extractor->numErrors()));
-	} else {
-		m_mainStatusLabel->setText(tr("Submitted %n feature file(s), thank you!", "", m_extractor->submittedExtractions()));
+		result += QString("\nIgnored %1 files(s) because of errors").arg(m_extractor->numErrors());
 	}
+    m_mainStatusLabel->setText(result);
 	m_closeButton->setVisible(true);
-	//m_pauseButton->setVisible(false);
 	m_stopButton->setVisible(false);
 }
 
@@ -115,7 +112,6 @@ void ProgressDialog::setProgress(int value)
 void ProgressDialog::stop()
 {
 	m_extractor->cancel();
-	//m_pauseButton->setEnabled(false);
 	m_stopButton->setEnabled(false);
 }
 
@@ -150,16 +146,6 @@ void ProgressDialog::closeEvent(QCloseEvent *event)
 	}
 	else {
 		event->accept();
-	}
-}
-
-void ProgressDialog::togglePause(bool checked)
-{
-	if (checked) {
-		m_extractor->pause();
-	}
-	else {
-		m_extractor->resume();
 	}
 }
 

@@ -17,6 +17,7 @@ struct AnalyzeResult
 	QString outputFileName;
 	int exitCode;
 	bool error;
+	bool nombid;
 	QString errorMessage;
 };
 
