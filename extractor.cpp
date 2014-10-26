@@ -171,9 +171,24 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
             m_numErrors++;
         }
 	}
+
+    qDebug() << "filename: " << result->fileName;
+    QString result_filename = result->fileName;
+    for (int i = 0; i < m_activeProcesses.length(); i++) {
+        qDebug() << "process " << i << ": " << m_activeProcesses[i];
+        QString process_filename = m_activeProcesses[i]->filePath();
+        qDebug() << "  filepath: " << process_filename;
+        if (process_filename == result_filename) {
+            qDebug() << "removing " << result->fileName << " from list";
+            m_activeProcesses.removeAt(i);
+            break; // We only remove the just processed file, so stop early
+        }
+    }
+
 	if (isRunning()) {
 		extractNextFile();
 	}
+
 	if (m_activeFiles == 0 && m_files.isEmpty()) {
 		if (m_submitQueue.isEmpty()) {
 			m_finished = true;
@@ -238,6 +253,7 @@ void Extractor::onRequestFinished(QNetworkReply *reply)
     }
     else if (error != QNetworkReply::NoError) {
         qWarning() << "Submission failed with network error" << error;
+        qWarning() << reply->errorString();
         emit networkError(reply->errorString());
         stop = true;
     }

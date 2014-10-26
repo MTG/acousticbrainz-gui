@@ -29,6 +29,7 @@ public:
 	AnalyzeFileTask(const QString &path, const QString &file);
 	void doanalyze();
 	void terminate();
+    QString filePath() const { return m_path; }
 
 signals:
 	void finished(AnalyzeResult *result);
