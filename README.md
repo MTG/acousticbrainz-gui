@@ -4,7 +4,7 @@ AcousticBrainz Extractor UI
 Dependencies
 ------------
 
- * Qt <http://qt.nokia.com/>
+ * Qt 4 <http://www.qt.io/>
 
 Installation
 ------------
