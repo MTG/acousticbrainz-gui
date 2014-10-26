@@ -86,7 +86,7 @@ add_executable(abzsubmit ${GUI_TYPE}
 )
 
 set_target_properties(abzsubmit PROPERTIES
-	OUTPUT_NAME acousticbrainz-extractor-ui
+	OUTPUT_NAME acousticbrainz-gui
     MACOSX_BUNDLE_ICON_FILE acoustid-fp.icns
 	MACOSX_BUNDLE_INFO_STRING "AcousticBrainz Extractor ${abzsubmit_VERSION}"
 	MACOSX_BUNDLE_BUNDLE_NAME "AcousticBrainz Extractor"
