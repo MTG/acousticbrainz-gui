@@ -25,7 +25,7 @@ private slots:
 
 private:
 	void setupUi();
-	void createProfile();
+	bool createProfile();
 	bool validateFields(QList<QString> &directories);
 
 	QLineEdit *m_apiKeyEdit;

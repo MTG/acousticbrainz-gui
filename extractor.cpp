@@ -94,8 +94,11 @@ void Extractor::cancel()
 	}
 	for (int i = 0; i < m_activeProcesses.size(); i++) {
 		qDebug() << "process " << i << " terminating";
-		m_activeProcesses[i]->terminate();
+        AnalyzeFileTask *task = m_activeProcesses[i];
+		task->terminate();
+        delete task;
 	}
+	m_activeProcesses.clear();
 }
 
 bool Extractor::hasErrors()
@@ -142,7 +145,6 @@ void Extractor::extractNextFile()
 	QString path = m_files.takeFirst();
 	emit currentPathChanged(path);
 	AnalyzeFileTask *task = new AnalyzeFileTask(path, m_profile->fileName());
-	// TODO: How to remove this from the list when done
 	m_activeProcesses.append(task);
 	connect(task, SIGNAL(finished(AnalyzeResult *)), SLOT(onFileAnalyzed(AnalyzeResult *)), Qt::QueuedConnection);
 	task->doanalyze();
@@ -151,7 +153,7 @@ void Extractor::extractNextFile()
 void Extractor::onFileAnalyzed(AnalyzeResult *result)
 {
 	qDebug() << result->exitCode;
-	qDebug() << result->outputFileName;
+	qDebug() << result->fileName << " -> " << result->outputFileName;
 	m_activeFiles--;
 	emit progress(++m_extractedFiles);
 	if (!result->error) {
@@ -164,26 +166,23 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 	}
 	else {
 		qDebug() << "Error " << result->errorMessage << "while processing " << result->fileName;
-        qDebug() << "   Return code " << result->exitCode;
-        if (result->exitCode == 2) {
-            m_numNoMbid++;
-        } else {
-            m_numErrors++;
-        }
+		if (result->exitCode == 2) {
+			m_numNoMbid++;
+		} else {
+			m_numErrors++;
+		}
 	}
-
-    qDebug() << "filename: " << result->fileName;
-    QString result_filename = result->fileName;
-    for (int i = 0; i < m_activeProcesses.length(); i++) {
-        qDebug() << "process " << i << ": " << m_activeProcesses[i];
-        QString process_filename = m_activeProcesses[i]->filePath();
-        qDebug() << "  filepath: " << process_filename;
-        if (process_filename == result_filename) {
-            qDebug() << "removing " << result->fileName << " from list";
-            m_activeProcesses.removeAt(i);
-            break; // We only remove the just processed file, so stop early
-        }
-    }
+	AnalyzeFileTask *task = result->m_task;
+	bool removed = m_activeProcesses.removeOne(task);
+	if (removed) {
+		qDebug() << "**** Removed task";
+		qDebug() << "list now " << m_activeProcesses.length();
+		qDebug("address of removed task %p", task);
+		delete task;
+	} else {
+		qDebug() << "##### Failed to remove task";
+		qDebug("address of failed task %p", task);
+	}
 
 	if (isRunning()) {
 		extractNextFile();
@@ -218,7 +217,7 @@ bool Extractor::maybeSubmit(bool force)
 				QVariantMap json = parser.parse (jsonContents, &ok).toMap();
 				if (!ok) {
 					qDebug() << "Failed to parse json, skipping";
-                    continue;
+					continue;
 				}
 				QVariantMap tags = json["metadata"].toMap()["tags"].toMap();
 				QString uuid;
@@ -226,19 +225,19 @@ bool Extractor::maybeSubmit(bool force)
 					  uuid = plugin.toString();
 					  break;
 				}
-                m_submitting.append(result->fileName);
+				m_submitting.append(result->fileName);
 
-                QString submit = QString(SUBMIT_URL).arg(uuid);
-                qDebug() << "Submitting to " << submit;
-                QNetworkRequest request = QNetworkRequest(QUrl(submit));
-                request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-                request.setRawHeader("User-Agent", userAgentString().toAscii());
-                m_reply = m_networkAccessManager->post(request, jsonContents);
+				QString submit = QString(SUBMIT_URL).arg(uuid);
+				qDebug() << "Submitting to " << submit;
+				QNetworkRequest request = QNetworkRequest(QUrl(submit));
+				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+				request.setRawHeader("User-Agent", userAgentString().toAscii());
+				m_reply = m_networkAccessManager->post(request, jsonContents);
 			}
 
 			delete result;
 		}
-        return true;
+		return true;
 	}
 	return false;
 }

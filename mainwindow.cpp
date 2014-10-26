@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QCryptographicHash>
+#include <QTimer>
 #include "progressdialog.h"
 #include "checkabledirmodel.h"
 #include "extractor.h"
@@ -21,7 +22,12 @@
 MainWindow::MainWindow()
 {
 	setupUi();
-	createProfile();
+	if (!createProfile()) {
+		QMessageBox::warning(this, tr("Error"),
+			tr("Make sure the extractor file exists"));
+        // Stackoverflow says I can do this but probably shouldn't
+        QTimer::singleShot(0, this, SLOT(close()));
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -86,7 +92,7 @@ void MainWindow::setupUi()
 	resize(QSize(400, 500));
 }
 
-void MainWindow::createProfile() {
+bool MainWindow::createProfile() {
 	m_profile = new QTemporaryFile();
 	if (m_profile->open()) {
 		QCryptographicHash *hash = new QCryptographicHash(QCryptographicHash::Sha1);
@@ -94,17 +100,19 @@ void MainWindow::createProfile() {
 		if (app.open(QIODevice::ReadOnly )) {
 			QByteArray data = app.readAll();
 			hash->addData(data);
+
+			QByteArray finalHash = hash->result();
+			QString hstr = finalHash.toHex();
+
+			QTextStream out(m_profile);
+			out << "requireMbid: true\n";
+			out << "indent: 0\n";
+			out << "mergeValues:\n    metadata:\n        version:\n            essentia_build_sha: " << hstr << "\n";
+			m_profile->close();
+			return true;
 		}
-
-		QByteArray finalHash = hash->result();
-		QString hstr = finalHash.toHex();
-
-		QTextStream out(m_profile);
-		out << "requireMbid: true\n";
-		out << "indent: 0\n";
-		out << "mergeValues:\n    metadata:\n        version:\n            essentia_build_sha: " << hstr << "\n";
-		m_profile->close();
 	}
+	return false;
 }
 
 void MainWindow::openAcousticbrainzWebsite()

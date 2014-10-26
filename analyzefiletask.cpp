@@ -15,7 +15,7 @@ void AnalyzeFileTask::doanalyze()
 {
 	qDebug() << "Analyzing file" << m_path;
 
-	result = new AnalyzeResult();
+	result = new AnalyzeResult(this);
 	result->fileName = m_path;
 
 	QStringList arguments;
@@ -32,14 +32,17 @@ void AnalyzeFileTask::doanalyze()
 void AnalyzeFileTask::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 	result->exitCode = extractor->exitCode();
 	result->outputFileName = tmp->fileName();
-    result->error = !exitCode==0;
-	qDebug() << "Result: " << result->exitCode << ", error " << result->error;
+	result->error = !exitCode==0;
+	if (exitCode == 2) {
+		result->errorMessage = "missing mbid";
+	}
 	emit finished(result);
 }
 
 void AnalyzeFileTask::error(QProcess::ProcessError error) {
 	qDebug() << "Error running " << error;
 	result->error = true;
+	result->errorMessage = "unknown error";
 	emit finished(result);
 }
 

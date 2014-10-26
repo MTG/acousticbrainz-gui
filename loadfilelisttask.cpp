@@ -34,7 +34,7 @@ QStringList LoadFileListTask::removeDuplicateDirectories(const QStringList &dire
 void LoadFileListTask::processFile(const QString &path)
 {
 	static QSet<QString> allowedExtensions = QSet<QString>()
-		<< "MP3" 
+		<< "MP3"
 		<< "MP4"
 		<< "M4A"
 		<< "FLAC"

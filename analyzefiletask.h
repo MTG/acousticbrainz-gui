@@ -7,10 +7,13 @@
 #include <QProcess>
 #include <QTemporaryFile>
 
+class AnalyzeFileTask;
+
 struct AnalyzeResult
 {
-	AnalyzeResult() : error(false)
+	AnalyzeResult(AnalyzeFileTask *task) : error(false)
 	{
+		m_task = task;
 	}
 
 	QString fileName;
@@ -19,6 +22,7 @@ struct AnalyzeResult
 	bool error;
 	bool nombid;
 	QString errorMessage;
+	AnalyzeFileTask *m_task;
 };
 
 class AnalyzeFileTask : public QObject
@@ -27,9 +31,17 @@ class AnalyzeFileTask : public QObject
 
 public:
 	AnalyzeFileTask(const QString &path, const QString &file);
+	virtual ~AnalyzeFileTask() {
+		delete extractor;
+		delete tmp;
+	}
 	void doanalyze();
 	void terminate();
-    QString filePath() const { return m_path; }
+	QString filePath() const { return m_path; }
+
+	bool operator==(const AnalyzeFileTask& rhs) {
+		return m_path == rhs.m_path;
+	}
 
 signals:
 	void finished(AnalyzeResult *result);
