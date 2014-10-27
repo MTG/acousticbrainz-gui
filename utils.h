@@ -15,7 +15,7 @@ inline QString extractorPath()
 
 inline QString userAgentString()
 {
-	return QString("AcousticbrainzSubmitter/%1 Qt/%2").arg(VERSION).arg(qVersion());
+	return QString("AcousticBrainzSubmitter/%1 Qt/%2").arg(VERSION).arg(qVersion());
 }
 
 inline QString cacheFileName()
