@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(abzsubmit)
-set(abzsubmit_VERSION 0.6)
+project(acousticbrainz-gui)
+set(acousticbrainz-gui_VERSION 0.1)
 
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)")
 set(EXEC_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "Installation prefix for executables and object code libraries" FORCE)
@@ -20,7 +20,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL MinSizeRel OR 
 	add_definitions(-DQT_NO_DEBUG_OUTPUT)
 endif(CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL MinSizeRel OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
 
-set(abzsubmit_HEADERS
+set(acousticbrainz-gui_HEADERS
 	checkabledirmodel.h
 	progressdialog.h
 	extractor.h
@@ -28,7 +28,7 @@ set(abzsubmit_HEADERS
 	loadfilelisttask.h
 	analyzefiletask.h
 )
-set(abzsubmit_SOURCES
+set(acousticbrainz-gui_SOURCES
 	checkabledirmodel.cpp
 	progressdialog.cpp
 	extractor.cpp
@@ -40,21 +40,21 @@ set(abzsubmit_SOURCES
 	crc.c
 	gzip.cpp
 )
-#set(abzsubmit_UIS abzsubmit.ui)
-set(abzsubmit_RESOURCES extractor.qrc)
+#set(acousticbrainz-gui_UIS acousticbrainz-gui.ui)
+set(acousticbrainz-gui_RESOURCES extractor.qrc)
 
-qt4_wrap_cpp(abzsubmit_MOC ${abzsubmit_HEADERS})
-qt4_wrap_ui(abzsubmit_UIS_H ${abzsubmit_UIS})
-qt4_add_resources(abzsubmit_RESOURCES_CPP ${abzsubmit_RESOURCES})
+qt4_wrap_cpp(acousticbrainz-gui_MOC ${acousticbrainz-gui_HEADERS})
+qt4_wrap_ui(acousticbrainz-gui_UIS_H ${acousticbrainz-gui_UIS})
+qt4_add_resources(acousticbrainz-gui_RESOURCES_CPP ${acousticbrainz-gui_RESOURCES})
 
 if(WIN32)
-	set(abzsubmit_SOURCES ${abzsubmit_SOURCES} extractor.rc)
+	set(acousticbrainz-gui_SOURCES ${acousticbrainz-gui_SOURCES} extractor.rc)
 endif()
 
 add_definitions(
 	-D__STDC_LIMIT_MACROS
 	-D__STDC_CONSTANT_MACROS
-	-DVERSION="${abzsubmit_VERSION}"
+	-DVERSION="${acousticbrainz-gui_VERSION}"
 )
 
 include_directories(
@@ -71,38 +71,38 @@ endif(WIN32)
 
 if(APPLE)
     set(GUI_TYPE MACOSX_BUNDLE)
-    set(abzsubmit_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/images/acoustid-fp.icns)
-    set_source_files_properties(${abzsubmit_ICON_FILE}
+    set(acousticbrainz-gui_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/images/acousticbrainz-gui.icns)
+    set_source_files_properties(${acousticbrainz-gui_ICON_FILE}
         PROPERTIES
         MACOSX_PACKAGE_LOCATION Resources)
-	set(abzsubmit_SOURCES ${abzsubmit_SOURCES} ${abzsubmit_ICON_FILE})
+	set(acousticbrainz-gui_SOURCES ${acousticbrainz-gui_SOURCES} ${acousticbrainz-gui_ICON_FILE})
 endif()
 
-add_executable(abzsubmit ${GUI_TYPE}
-    ${abzsubmit_SOURCES}
-    ${abzsubmit_MOC}
-    ${abzsubmit_UIS_H}
-    ${abzsubmit_RESOURCES_CPP}
+add_executable(acousticbrainz-gui ${GUI_TYPE}
+    ${acousticbrainz-gui_SOURCES}
+    ${acousticbrainz-gui_MOC}
+    ${acousticbrainz-gui_UIS_H}
+    ${acousticbrainz-gui_RESOURCES_CPP}
 )
 
-set_target_properties(abzsubmit PROPERTIES
+set_target_properties(acousticbrainz-gui PROPERTIES
 	OUTPUT_NAME acousticbrainz-gui
-    MACOSX_BUNDLE_ICON_FILE acoustid-fp.icns
-	MACOSX_BUNDLE_INFO_STRING "AcousticBrainz Extractor ${abzsubmit_VERSION}"
+    MACOSX_BUNDLE_ICON_FILE acousticbrainz-gui.icns
+	MACOSX_BUNDLE_INFO_STRING "AcousticBrainz Extractor ${acousticbrainz-gui_VERSION}"
 	MACOSX_BUNDLE_BUNDLE_NAME "AcousticBrainz Extractor"
 )
 
-target_link_libraries(abzsubmit
+target_link_libraries(acousticbrainz-gui
 	${QT_LIBRARIES}
     ${QJSON_LIBRARIES}
 )
 
 if(APPLE)
-	target_link_libraries(abzsubmit "-framework Accelerate -lz")
+	target_link_libraries(acousticbrainz-gui "-framework Accelerate -lz")
 endif()
 
 if(UNIX)
 	install(FILES acousticbrainz-gui.desktop DESTINATION share/applications)
 endif()
 
-install(TARGETS abzsubmit DESTINATION ${BIN_INSTALL_DIR})
+install(TARGETS acousticbrainz-gui DESTINATION ${BIN_INSTALL_DIR})
