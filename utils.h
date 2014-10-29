@@ -3,14 +3,22 @@
 
 #include <QString>
 #include <QDesktopServices>
+#include <QStringList>
+#include <QCoreApplication>
+#include <QFileInfo>
+#include <QDir>
+
+QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
 
 inline QString extractorPath()
 {
-#ifdef Q_OS_WIN32
-    return "\\extractor\\streaming_extractor_music";
-#else
-    return "./extractor/streaming_extractor_music";
-#endif
+    QString extractor_name = "streaming_extractor_music";
+    QString path = findExecutable(extractor_name);
+    if (path.isEmpty()) {
+        QString execdir = QFileInfo( QCoreApplication::applicationFilePath() ).absoluteDir().absolutePath();
+        path = findExecutable(extractor_name, QStringList(execdir));
+    }
+    return path;
 }
 
 inline QString userAgentString()

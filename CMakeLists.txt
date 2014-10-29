@@ -37,6 +37,7 @@ set(acousticbrainz-gui_SOURCES
 	loadfilelisttask.cpp
 	analyzefiletask.cpp
 	updatelogfiletask.cpp
+    utils.cpp
 	crc.c
 	gzip.cpp
 )
