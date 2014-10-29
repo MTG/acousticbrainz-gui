@@ -1,0 +1,8 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>images/acousticbrainz-gui-16.png</file>
+    <file>images/acousticbrainz-gui-24.png</file>
+    <file>images/acousticbrainz-gui-32.png</file>
+    <file>images/acousticbrainz-gui-48.png</file>
+</qresource>
+</RCC>

@@ -41,7 +41,7 @@ set(abzsubmit_SOURCES
 	gzip.cpp
 )
 #set(abzsubmit_UIS abzsubmit.ui)
-#set(abzsubmit_RESOURCES extractor.qrc)
+set(abzsubmit_RESOURCES extractor.qrc)
 
 qt4_wrap_cpp(abzsubmit_MOC ${abzsubmit_HEADERS})
 qt4_wrap_ui(abzsubmit_UIS_H ${abzsubmit_UIS})
