@@ -102,7 +102,7 @@ if(APPLE)
 endif()
 
 if(UNIX)
-	install(FILES acousticbrainz-extractor-ui.desktop DESTINATION share/applications)
+	install(FILES acousticbrainz-gui.desktop DESTINATION share/applications)
 endif()
 
 install(TARGETS abzsubmit DESTINATION ${BIN_INSTALL_DIR})
