@@ -177,7 +177,6 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 	if (removed) {
 		qDebug() << "**** Removed task";
 		qDebug() << "list now " << m_activeProcesses.length();
-		qDebug("address of removed task %p", task);
 		delete task;
 	} else {
 		qDebug() << "##### Failed to remove task";
@@ -201,45 +200,46 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 
 bool Extractor::maybeSubmit(bool force)
 {
-	int size = qMin(MAX_BATCH_SIZE, m_submitQueue.size());
-	if (!m_reply && (size >= MIN_BATCH_SIZE || (force && size > 0))) {
-		qDebug() << "Submitting" << size << "codes";
-		for (int i = 0; i < size; i++) {
-			AnalyzeResult *result = m_submitQueue.takeFirst();
-			//qDebug() << "  " << result->mbid;
+	int size = m_submitQueue.size();
+	qDebug() << "got " << size << " to submit, going to send 1";
+	if (!m_reply && size > 0) {
+		qDebug() << "Submitting 1 code";
 
-			QString filename = result->outputFileName;
-			QFile thejson(filename);
-			if (thejson.open(QIODevice::ReadOnly)) {
-				QJson::Parser parser;
-				bool ok;
-				QByteArray jsonContents = thejson.readAll();
-				QVariantMap json = parser.parse (jsonContents, &ok).toMap();
-				if (!ok) {
-					qDebug() << "Failed to parse json, skipping";
-					continue;
-				}
-				QVariantMap tags = json["metadata"].toMap()["tags"].toMap();
-				QString uuid;
-				foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
-					  uuid = plugin.toString();
-					  break;
-				}
-				m_submitting.append(result->fileName);
+		AnalyzeResult *result = m_submitQueue.takeFirst();
+		//qDebug() << "  " << result->mbid;
 
-				QString submit = QString(SUBMIT_URL).arg(uuid);
-				qDebug() << "Submitting to " << submit;
-				QNetworkRequest request = QNetworkRequest(QUrl(submit));
-				request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-				request.setRawHeader("User-Agent", userAgentString().toAscii());
-				m_reply = m_networkAccessManager->post(request, jsonContents);
+		QString filename = result->outputFileName;
+		QFile thejson(filename);
+		if (thejson.open(QIODevice::ReadOnly)) {
+			QJson::Parser parser;
+			bool ok;
+			QByteArray jsonContents = thejson.readAll();
+			QVariantMap json = parser.parse (jsonContents, &ok).toMap();
+			if (!ok) {
+				qDebug() << "Failed to parse json, skipping";
+				return false;
 			}
+			QVariantMap tags = json["metadata"].toMap()["tags"].toMap();
+			QString uuid;
+			foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
+				  uuid = plugin.toString();
+				  break;
+			}
+			m_submitting.append(result->fileName);
 
-			delete result;
+			QString submit = QString(SUBMIT_URL).arg(uuid);
+			qDebug() << "Submitting to " << submit;
+			QNetworkRequest request = QNetworkRequest(QUrl(submit));
+			request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+			request.setRawHeader("User-Agent", userAgentString().toAscii());
+			m_reply = m_networkAccessManager->post(request, jsonContents);
+		} else {
+			qDebug() << "Failed to open source file";
 		}
-		return true;
+
+		delete result;
 	}
-	return false;
+	return true;
 }
 
 void Extractor::onRequestFinished(QNetworkReply *reply)
