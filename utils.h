@@ -12,7 +12,11 @@ QString findExecutable(const QString &executableName, const QStringList &paths =
 
 inline QString extractorPath()
 {
+#if Q_OS_WIN
+    QString extractor_name = "streaming_extractor_music.exe";
+#else
     QString extractor_name = "streaming_extractor_music";
+#endif
     QString path = findExecutable(extractor_name);
     if (path.isEmpty()) {
         QString execdir = QFileInfo( QCoreApplication::applicationFilePath() ).absoluteDir().absolutePath();
