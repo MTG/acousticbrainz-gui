@@ -23,6 +23,7 @@ struct AnalyzeResult
 	bool nombid;
 	QString errorMessage;
 	AnalyzeFileTask *m_task;
+	QTemporaryFile *m_tmpFile;
 };
 
 class AnalyzeFileTask : public QObject
@@ -33,7 +34,6 @@ public:
 	AnalyzeFileTask(const QString &path, const QString &file);
 	virtual ~AnalyzeFileTask() {
 		delete extractor;
-		delete tmp;
 	}
 	void doanalyze();
 	void terminate();
@@ -55,7 +55,6 @@ private:
 	QString m_profile;
 
 	QProcess* extractor;
-	QTemporaryFile* tmp;
 	AnalyzeResult *result;
 };
 
