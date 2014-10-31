@@ -1,23 +1,21 @@
 AcousticBrainz Client
 =====================
 
-
-For more information about AcousticBrainz, see http://acousticbrainz.org
-
 This client lets you submit your own audio features to the AcousticBrainz project.
+For more information about AcousticBrainz, see http://acousticbrainz.org
 
 Getting a feature extractor
 ---------------------------
 To contribute data to AcousticBrainz you first need an _extractor_. This is a
-program that analyses your music and generates a file.
+program that analyses your music and generates a file containing data about each track.
 
 We provide static builds of extractors for popular platforms. Find one
 for your platform here:
 
 http://acousticbrainz.org/download
 
-Put the extractor in the directory `extractor`. It should be called `streaming_extractor_music`.
-These files require no additional dependencies.
+Put the extractor and any other included files in the same directory as the submitter client.
+It should be called `streaming_extractor_music`.
 
 To run
 ------
@@ -38,3 +36,11 @@ Installation
     $ cmake -DCMAKE_BUILD_TYPE=Release .
     $ make
 ```
+
+License
+-------
+This application is Copyright Music Technology Group, Universitat Pompeu Fabra.
+It is available under the terms of the GNU GPL v2. See COPYING for details.
+
+The AcousticBrainz Client is based on the Acoustid fingerprinter by Lukáš Lalinský
+available at https://bitbucket.org/acoustid/acoustid-fingerprinter
