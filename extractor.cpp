@@ -281,8 +281,12 @@ void Extractor::onRequestFinished(QNetworkReply *reply)
         return;
     }
 
-    if (isRunning()) {
-        maybeSubmit(m_files.isEmpty());
+    if (isRunning() || !m_submitQueue.isEmpty()) {
+        if (!isRunning()) {
+            qDebug() << "Finished running, but queue is not empty";
+        }
+        qDebug() << "Request finished, submitting again";
+        maybeSubmit();
     }
 }
 
