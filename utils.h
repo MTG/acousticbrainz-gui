@@ -7,22 +7,21 @@
 #include <QCoreApplication>
 #include <QFileInfo>
 #include <QDir>
-
-QString findExecutable(const QString &executableName, const QStringList &paths = QStringList());
+#include <QStandardPaths>
 
 inline QString extractorPath()
 {
 #ifdef Q_OS_WIN
-    QString extractor_name = "streaming_extractor_music.exe";
+	QString extractor_name = "streaming_extractor_music.exe";
 #else
-    QString extractor_name = "streaming_extractor_music";
+	QString extractor_name = "streaming_extractor_music";
 #endif
-    QString path = findExecutable(extractor_name);
-    if (path.isEmpty()) {
-        QString execdir = QFileInfo( QCoreApplication::applicationFilePath() ).absoluteDir().absolutePath();
-        path = findExecutable(extractor_name, QStringList(execdir));
-    }
-    return path;
+	QString path = QStandardPaths::findExecutable(extractor_name);
+	if (path.isEmpty()) {
+		QString execdir = QFileInfo( QCoreApplication::applicationFilePath() ).absoluteDir().absolutePath();
+		path = QStandardPaths::findExecutable(extractor_name, QStringList(execdir));
+	}
+	return path;
 }
 
 inline QString userAgentString()
@@ -32,7 +31,7 @@ inline QString userAgentString()
 
 inline QString cacheFileName()
 {
-	return QDesktopServices::storageLocation(QDesktopServices::CacheLocation) + "/submitted.log";
+	return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/submitted.log";
 }
 
 inline QString extractExtension(const QString &fileName)

@@ -2,6 +2,7 @@
 #include <QLabel>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QStandardPaths>
 #include <QUrl>
 #include <QLineEdit>
 #include <QDialogButtonBox>
@@ -54,8 +55,7 @@ void MainWindow::setupUi()
 	treeView->hideColumn(2);
 	treeView->hideColumn(3);
 
-//	QString homePath = QDir::homePath();
-	QString homePath = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+	QString homePath = QStandardPaths::writableLocation(QStandardPaths::MusicLocation);
 	const QModelIndex homePathIndex = m_directoryModel->index(homePath);
 	treeView->expand(homePathIndex);
 	treeView->selectionModel()->setCurrentIndex(homePathIndex, QItemSelectionModel::ClearAndSelect);

@@ -8,6 +8,9 @@
 #include <QDesktopServices>
 #include <QMutexLocker>
 #include <QThreadPool>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include "loadfilelisttask.h"
 #include "analyzefiletask.h"
 #include "updatelogfiletask.h"
@@ -16,7 +19,6 @@
 #include "utils.h"
 #include "gzip.h"
 
-#include <qjson/parser.h>
 
 class NetworkProxyFactory : public QNetworkProxyFactory
 {
@@ -67,6 +69,7 @@ Extractor::Extractor(const QStringList &directories, QTemporaryFile *profile)
 	m_networkAccessManager = new QNetworkAccessManager(this);
 	m_networkAccessManager->setProxyFactory(new NetworkProxyFactory());
 	connect(m_networkAccessManager, SIGNAL(finished(QNetworkReply *)), SLOT(onRequestFinished(QNetworkReply*)));
+
 }
 
 Extractor::~Extractor()
@@ -93,7 +96,6 @@ void Extractor::cancel()
 		m_reply->abort();
 	}
 	for (int i = 0; i < m_activeProcesses.size(); i++) {
-		qDebug() << "process " << i << " terminating";
         AnalyzeFileTask *task = m_activeProcesses[i];
 		task->terminate();
         delete task;
@@ -175,12 +177,7 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 	AnalyzeFileTask *task = result->m_task;
 	bool removed = m_activeProcesses.removeOne(task);
 	if (removed) {
-		qDebug() << "**** Removed task";
-		qDebug() << "list now " << m_activeProcesses.length();
 		delete task;
-	} else {
-		qDebug() << "##### Failed to remove task";
-		qDebug("address of failed task %p", task);
 	}
 
 	if (isRunning()) {
@@ -193,52 +190,67 @@ void Extractor::onFileAnalyzed(AnalyzeResult *result)
 			emit finished();
 			return;
 		}
-		maybeSubmit(true);
+		maybeSubmit();
 	}
 }
 
 
-bool Extractor::maybeSubmit(bool force)
+bool Extractor::maybeSubmit()
 {
 	int size = m_submitQueue.size();
-	qDebug() << "got " << size << " to submit, going to send 1";
+	qDebug() << "got" << size << "to submit, going to send 1";
 	if (!m_reply && size > 0) {
 		qDebug() << "Submitting 1 code";
-
 		AnalyzeResult *result = m_submitQueue.takeFirst();
-		//qDebug() << "  " << result->mbid;
 
 		QString filename = result->outputFileName;
 		QFile thejson(filename);
 		if (thejson.open(QIODevice::ReadOnly)) {
-			QJson::Parser parser;
-			bool ok;
 			QByteArray jsonContents = thejson.readAll();
-			QVariantMap json = parser.parse (jsonContents, &ok).toMap();
-			if (!ok) {
-				qDebug() << "Failed to parse json, skipping";
+
+			QJsonDocument d = QJsonDocument::fromJson(jsonContents);
+			if (d.isEmpty()) {
 				return false;
 			}
-			QVariantMap tags = json["metadata"].toMap()["tags"].toMap();
-			QString uuid;
-			foreach (QVariant plugin, tags["musicbrainz_trackid"].toList()) {
-				  uuid = plugin.toString();
-				  break;
+
+			QJsonObject doc = d.object();
+			if (doc.empty()) {
+				return false;
 			}
+			QJsonObject metadata = doc.value(QString("metadata")).toObject();
+			if (metadata.empty()) {
+				return false;
+			}
+			QJsonObject tags = metadata.value(QString("tags")).toObject();
+			if (tags.empty()) {
+				return false;
+			}
+			QJsonArray mbids = tags.value("musicbrainz_trackid").toArray();
+			QString uuid;
+			if (mbids.size()) {
+				uuid = mbids[0].toString();
+			}
+
 			m_submitting.append(result->fileName);
 
 			QString submit = QString(SUBMIT_URL).arg(uuid);
-			qDebug() << "Submitting to " << submit;
+			int bytes = jsonContents.length();
+			qDebug() << "Submitting " << bytes << " b to " << submit;
 			QNetworkRequest request = QNetworkRequest(QUrl(submit));
 			request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-			request.setRawHeader("User-Agent", userAgentString().toAscii());
+			request.setHeader(QNetworkRequest::UserAgentHeader, userAgentString());
 			m_reply = m_networkAccessManager->post(request, jsonContents);
 		} else {
 			qDebug() << "Failed to open source file";
 		}
 
 		delete result;
-	}
+	} else if (m_reply && size > 0) {
+        qDebug() << "Other query in progress, skipping for now";
+    } else if (size == 0) {
+        qDebug() << "No files to submit";
+    }
+
 	return true;
 }
 
@@ -253,14 +265,12 @@ void Extractor::onRequestFinished(QNetworkReply *reply)
     else if (error != QNetworkReply::NoError) {
         qWarning() << "Submission failed with network error" << error;
         qWarning() << reply->errorString();
-        emit networkError(reply->errorString());
         stop = true;
     }
 
     if (!stop && error == QNetworkReply::NoError) {
         m_submitted.append(m_submitting);
         m_submittedFiles += m_submitting.size();
-        maybeSubmit();
         qDebug() << "Submission finished";
     }
 

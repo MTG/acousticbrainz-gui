@@ -50,7 +50,7 @@ private slots:
 
 private:
 	void extractNextFile();
-	bool maybeSubmit(bool force=false);
+    bool maybeSubmit();
 
 	QTemporaryFile *m_profile;
 	QString m_apiKey;
