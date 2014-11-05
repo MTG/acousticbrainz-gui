@@ -22,8 +22,6 @@ ProgressDialog::ProgressDialog(QWidget *parent, Extractor *extractor)
 	connect(extractor, SIGNAL(extractionStarted(int)), SLOT(onExtractionStarted(int)));
 	connect(extractor, SIGNAL(currentPathChanged(const QString &)), SLOT(onCurrentPathChanged(const QString &)));
 	connect(extractor, SIGNAL(finished()), SLOT(onFinished()));
-	//connect(fingerprinter, SIGNAL(networkError(const QString &)), SLOT(onNetworkError(const QString &)));
-	//connect(fingerprinter, SIGNAL(authenticationError()), SLOT(onAuthenticationError()));
 	connect(extractor, SIGNAL(noFilesError()), SLOT(onNoFilesError()));
 }
 
@@ -52,7 +50,7 @@ void ProgressDialog::setupUi()
 	m_progressBar->setMaximum(0);
 	m_progressBar->setFormat(tr("%v of %m"));
 	m_progressBar->setTextVisible(false);
-	connect(m_extractor, SIGNAL(progress(int)), m_progressBar, SLOT(setValue(int)));
+	connect(m_extractor, SIGNAL(progress(int)), SLOT(setProgress(int)));
 
 	QVBoxLayout *mainLayout = new QVBoxLayout();
 	mainLayout->addWidget(m_mainStatusLabel);
@@ -76,22 +74,24 @@ void ProgressDialog::onFileListLoadingStarted()
 
 void ProgressDialog::onExtractionStarted(int count)
 {
+	m_count = count;
 	m_progressBar->setTextVisible(true);
-	m_progressBar->setMaximum(count);
+	m_progressBar->setMaximum(0);
+	m_progressBar->setMinimum(0);
 	m_progressBar->setValue(0);
 	m_mainStatusLabel->setText(tr("Extracting..."));
 }
 
 void ProgressDialog::onFinished()
 {
-    QString result = QString("Submitted %1 feature file(s), thank you!").arg(m_extractor->submittedExtractions());
-    if (m_extractor->numNoMbid() > 0) {
-        result += QString("\n%1 file(s) had no MBID and were skipped").arg(m_extractor->numNoMbid());
-    }
+	QString result = QString("Submitted %1 feature file(s), thank you!").arg(m_extractor->submittedExtractions());
+	if (m_extractor->numNoMbid() > 0) {
+		result += QString("\n%1 file(s) had no MBID and were skipped").arg(m_extractor->numNoMbid());
+	}
 	if (m_extractor->hasErrors()) {
 		result += QString("\nIgnored %1 files(s) because of errors").arg(m_extractor->numErrors());
 	}
-    m_mainStatusLabel->setText(result);
+	m_mainStatusLabel->setText(result);
 	m_closeButton->setVisible(true);
 	m_stopButton->setVisible(false);
 }
@@ -106,31 +106,24 @@ void ProgressDialog::onCurrentPathChanged(const QString &path)
 
 void ProgressDialog::setProgress(int value)
 {
+	if (value > 0) {
+		m_progressBar->setMaximum(m_count);
+	}
 	m_progressBar->setValue(value);
 }
 
 void ProgressDialog::stop()
 {
+	m_progressBar->setMaximum(m_count);
 	m_extractor->cancel();
 	m_stopButton->setEnabled(false);
 }
 
-/*
 void ProgressDialog::onNetworkError(const QString &message)
 {
 	stop();
 	QMessageBox::critical(this, tr("Network Error"), message);
 }
-
-void ProgressDialog::onAuthenticationError()
-{
-	stop();
-	QMessageBox::critical(this, tr("Error"),
-		tr("Invalid API key. Please check if the API key "
-		"you entered matches your key on the "
-		"<a href=\"%1\">Acoustid website</a>.").arg(API_KEY_URL));
-}
-*/
 
 void ProgressDialog::onNoFilesError()
 {

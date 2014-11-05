@@ -21,8 +21,7 @@ public slots:
 	void onExtractionStarted(int count);
 	void onCurrentPathChanged(const QString &path);
 	void onFinished();
-	//void onNetworkError(const QString &message);
-	//void onAuthenticationError();
+	void onNetworkError(const QString &message);
 	void onNoFilesError();
 
 protected:
@@ -37,6 +36,7 @@ private:
 	QProgressBar *m_progressBar;
 	QLabel *m_mainStatusLabel;
 	QLabel *m_currentPathLabel;
+	int m_count;
 };
 
 #endif
