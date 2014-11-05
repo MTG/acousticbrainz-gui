@@ -92,6 +92,8 @@ void ProgressDialog::onFinished()
 		result += QString("\nIgnored %1 files(s) because of errors").arg(m_extractor->numErrors());
 	}
 	m_mainStatusLabel->setText(result);
+	m_progressBar->setVisible(false);
+	m_currentPathLabel->setVisible(false);
 	m_closeButton->setVisible(true);
 	m_stopButton->setVisible(false);
 }
