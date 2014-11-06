@@ -285,7 +285,7 @@ void Extractor::onRequestFinished(QNetworkReply *reply)
     reply->deleteLater();
     m_reply = 0;
 
-    if (m_submitQueue.isEmpty() && m_files.isEmpty()) {
+    if (m_submitQueue.isEmpty() && m_files.isEmpty() && m_activeFiles == 0) {
         m_finished = true;
         emit finished();
         return;
