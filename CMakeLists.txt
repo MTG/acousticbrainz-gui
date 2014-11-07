@@ -86,4 +86,6 @@ if(UNIX)
 	install(FILES acousticbrainz-gui.desktop DESTINATION share/applications)
 endif()
 
-install(TARGETS acousticbrainz-gui DESTINATION ${BIN_INSTALL_DIR})
+if(APPLE)
+    install(TARGETS acousticbrainz-gui BUNDLE DESTINATION .)
+endif()

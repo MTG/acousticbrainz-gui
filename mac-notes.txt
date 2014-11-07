@@ -1,0 +1,19 @@
+cp -R QtCore.framework ~/acousticbrainz-gui/acousticbrainz-gui.app/Contents/Frameworks/
+cp -R QtGui.framework ~/acousticbrainz-gui/acousticbrainz-gui.app/Contents/Frameworks/
+cp -R QtNetwork.framework ~/acousticbrainz-gui/acousticbrainz-gui.app/Contents/Frameworks/
+cp -R QtWidgets.framework ~/acousticbrainz-gui/acousticbrainz-gui.app/Contents/Frameworks/
+
+chmod ug+w QtCore.framework/Versions/5/QtCore
+chmod ug+w QtGui.framework/Versions/5/QtGui
+chmod ug+w QtNetwork.framework/Versions/5/QtNetwork
+chmod ug+w QtWidgets.framework/Versions/5/QtWidgets
+
+install_name_tool -id @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore QtCore.framework/Versions/5/QtCore
+install_name_tool -id @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui QtGui.framework/Versions/5/QtGui
+install_name_tool -id @executable_path/../Frameworks/QtNetwork.framework/Versions/5/QtNetwork QtNetwork.framework/Versions/5/QtNetwork
+install_name_tool -id @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets QtWidgets.framework/Versions/5/QtWidgets
+
+install_name_tool -change @@HOMEBREW_CELLAR@@/qt5/5.3.2/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore  QtGui.framework/Versions/5/QtGui
+install_name_tool -change @@HOMEBREW_CELLAR@@/qt5/5.3.2/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui  QtWidgets.framework/Versions/5/QtWidgets
+install_name_tool -change @@HOMEBREW_CELLAR@@/qt5/5.3.2/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore  QtWidgets.framework/Versions/5/QtWidgets
+install_name_tool -change @@HOMEBREW_CELLAR@@/qt5/5.3.2/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore  QtNetwork.framework/Versions/5/QtNetwork
