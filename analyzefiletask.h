@@ -11,9 +11,10 @@ class AnalyzeFileTask;
 
 struct AnalyzeResult
 {
-	AnalyzeResult(AnalyzeFileTask *task) : error(false)
+	AnalyzeResult(AnalyzeFileTask *task)
+	: error(false), m_task(task)
 	{
-		m_task = task;
+		m_tmpFile = new QTemporaryFile();
 	}
 
 	QString fileName;

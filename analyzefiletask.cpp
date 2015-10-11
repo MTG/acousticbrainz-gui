@@ -19,7 +19,6 @@ void AnalyzeFileTask::doanalyze()
 	result->fileName = m_path;
 
 	QStringList arguments;
-	result->m_tmpFile = new QTemporaryFile();
 	if (result->m_tmpFile->open()) {
 		arguments << m_path << result->m_tmpFile->fileName() << m_profile;
 		extractor = new QProcess(this);
