@@ -25,6 +25,11 @@ struct AnalyzeResult
 	QString errorMessage;
 	AnalyzeFileTask *m_task;
 	QTemporaryFile *m_tmpFile;
+
+	~AnalyzeResult()
+	{
+		delete m_tmpFile;
+	}
 };
 
 class AnalyzeFileTask : public QObject
