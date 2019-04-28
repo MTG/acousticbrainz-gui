@@ -133,7 +133,7 @@ void Extractor::onFileListLoaded(const QStringList &files)
 		return;
 	}
 	emit extractionStarted(files.size());
-	while (!m_files.isEmpty() && m_activeFiles < MAX_ACTIVE_FILES) {
+	while (!m_files.isEmpty() && m_activeFiles < QThread::idealThreadCount()) {
 		extractNextFile();
 	}
 }
