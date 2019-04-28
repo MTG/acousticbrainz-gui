@@ -23,6 +23,12 @@ To run
 Run the `acousticbrainz-gui` program. Select folders that contain music tagged
 with MusicBrainz identifiers. Click Analyze.
 
+*Note:* Since all available CPU threads will be used, consider lowering the priority of
+`acousticbrainz-gui` -- all new invocations of `streaming_extractor_music` will
+adopt the new priority. If the priority is changed while analysis is ongoing, it
+may take a few minutes for the new priority to be completely adopted while existing
+invocations of `streaming_extractor_music` finish.
+
 Dependencies
 ------------
 
