@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.14)
+
+# Allow the use of generator expressions in install(CODE) (requires cmake 3.14)
+# https://cmake.org/cmake/help/latest/policy/CMP0087.html
+cmake_policy(SET CMP0087 NEW)
 
 project(acousticbrainz-gui)
 set(acousticbrainz-gui_VERSION 0.2dev)
@@ -11,8 +15,7 @@ set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "Installation
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5Widgets)
-find_package(Qt5Network)
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
 
 if(CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL MinSizeRel OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
 	add_definitions(-DQT_NO_DEBUG_OUTPUT)
@@ -67,7 +70,7 @@ if(APPLE)
 endif()
 
 add_executable(acousticbrainz-gui ${GUI_TYPE} ${acousticbrainz-gui_SOURCES})
-qt5_use_modules(acousticbrainz-gui Widgets Network)
+target_link_libraries(acousticbrainz-gui Qt5::Widgets Qt5::Network)
 
 
 set_target_properties(acousticbrainz-gui PROPERTIES
@@ -90,4 +93,25 @@ if(APPLE)
     install(TARGETS acousticbrainz-gui BUNDLE DESTINATION .)
 elseif(UNIX)
     install(TARGETS acousticbrainz-gui RUNTIME DESTINATION ${BIN_INSTALL_DIR})
+endif()
+
+if(WIN32)
+	# Install Windows system libraries alongside application
+	set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+	include(InstallRequiredSystemLibraries)
+
+	# Find the windeployqt executable, used for copying necessary QT libs alongside the application
+	get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+	get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+	find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+
+	# Install QT dependencies alongside application
+	install(TARGETS acousticbrainz-gui BUNDLE)
+	install(CODE "set(WINDEPLOYQT_EXECUTABLE \"${WINDEPLOYQT_EXECUTABLE}\")")
+	install(CODE [=[
+		execute_process(COMMAND "${WINDEPLOYQT_EXECUTABLE}" "bin/$<TARGET_FILE_NAME:acousticbrainz-gui>" WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+	]=])
+
+	# For convenience, include the stream extractor executable if it is present in the source directory
+	install(PROGRAMS streaming_extractor_music.exe DESTINATION bin OPTIONAL)
 endif()
