@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.14)
+
+# Allow the use of generator expressions in install(CODE) (requires cmake 3.14)
+# https://cmake.org/cmake/help/latest/policy/CMP0087.html
+cmake_policy(SET CMP0087 NEW)
 
 project(acousticbrainz-gui)
 set(acousticbrainz-gui_VERSION 0.2dev)
@@ -90,4 +94,22 @@ if(APPLE)
     install(TARGETS acousticbrainz-gui BUNDLE DESTINATION .)
 elseif(UNIX)
     install(TARGETS acousticbrainz-gui RUNTIME DESTINATION ${BIN_INSTALL_DIR})
+endif()
+
+if(WIN32)
+	# Install Windows system libraries alongside application
+	set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+	include(InstallRequiredSystemLibraries)
+
+	# Find the windeployqt executable, used for copying necessary QT libs alongside the application
+	get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+	get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+	find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${_qt_bin_dir}")
+
+	# Install QT dependencies alongside application
+	install(TARGETS acousticbrainz-gui BUNDLE)
+	install(CODE "set(WINDEPLOYQT_EXECUTABLE \"${WINDEPLOYQT_EXECUTABLE}\")")
+	install(CODE [=[
+		execute_process(COMMAND "${WINDEPLOYQT_EXECUTABLE}" "bin/$<TARGET_FILE_NAME:acousticbrainz-gui>" WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+	]=])
 endif()
