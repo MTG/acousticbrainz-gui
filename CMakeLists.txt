@@ -67,7 +67,7 @@ if(APPLE)
 endif()
 
 add_executable(acousticbrainz-gui ${GUI_TYPE} ${acousticbrainz-gui_SOURCES})
-qt5_use_modules(acousticbrainz-gui Widgets Network)
+target_link_libraries(acousticbrainz-gui Qt5::Widgets Qt5::Network)
 
 
 set_target_properties(acousticbrainz-gui PROPERTIES
