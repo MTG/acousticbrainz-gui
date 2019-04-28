@@ -112,4 +112,7 @@ if(WIN32)
 	install(CODE [=[
 		execute_process(COMMAND "${WINDEPLOYQT_EXECUTABLE}" "bin/$<TARGET_FILE_NAME:acousticbrainz-gui>" WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
 	]=])
+
+	# For convenience, include the stream extractor executable if it is present in the source directory
+	install(PROGRAMS streaming_extractor_music.exe DESTINATION bin OPTIONAL)
 endif()
